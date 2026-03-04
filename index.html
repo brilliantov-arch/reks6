@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏄 Surf Rider Idle</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+:root {
+  --ocean:#0ea5e9; --ocean-dark:#0369a1; --ocean-light:#7dd3fc;
+  --sand:#fde68a; --sand-dark:#f59e0b; --palm:#16a34a;
+  --accent:#f97316; --purple:#7c3aed; --gold:#fbbf24;
+  --card:rgba(255,255,255,0.12); --card-border:rgba(255,255,255,0.25);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Nunito',sans-serif;background:linear-gradient(180deg,#0c4a6e 0%,#075985 40%,#0369a1 100%);min-height:100vh;color:white;overflow-x:hidden;}
+
+/* ── WELCOME POPUP ── */
+#welcomeOverlay{
+  position:fixed;inset:0;z-index:9999;
+  background:rgba(0,0,0,0.88);
+  backdrop-filter:blur(12px);
+  display:flex;align-items:center;justify-content:center;
+  animation:fadeIn .4s ease;
+}
+#welcomeOverlay.hide{animation:fadeOut .4s ease forwards;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeOut{from{opacity:1}to{opacity:0}}
+
+.wc{
+  width:92%;max-width:490px;
+  background:linear-gradient(160deg,#0c4a6e,#071f35);
+  border:2px solid rgba(255,255,255,0.18);
+  border-radius:28px;overflow:hidden;
+  box-shadow:0 30px 80px rgba(0,0,0,0.8);
+  animation:popIn .55s cubic-bezier(.34,1.56,.64,1) .05s both;
+}
+@keyframes popIn{from{transform:scale(.72) translateY(40px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+
+/* ocean header */
+.wc-top{
+  height:100px;position:relative;overflow:hidden;
+  background:linear-gradient(180deg,#38bdf8,#0284c7);
+}
+.wc-palm{position:absolute;top:10px;font-size:34px;animation:palmSway 2.5s ease-in-out infinite alternate;}
+.wc-palm.l{left:10px;} .wc-palm.r{right:10px;animation-direction:alternate-reverse;}
+@keyframes palmSway{from{transform:rotate(-6deg)}to{transform:rotate(6deg)}}
+.wc-star{position:absolute;animation:twinkle 1.6s ease-in-out infinite;}
+@keyframes twinkle{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+.wc-char{
+  position:absolute;top:10px;left:50%;transform:translateX(-50%);
+  font-size:54px;z-index:2;
+  animation:charBob 1.8s ease-in-out infinite;
+  filter:drop-shadow(0 4px 10px rgba(0,0,0,0.4));
+}
+@keyframes charBob{0%,100%{transform:translateX(-50%) translateY(0) rotate(-5deg)}50%{transform:translateX(-50%) translateY(-10px) rotate(5deg)}}
+.wc-wave{
+  position:absolute;bottom:0;left:0;right:0;height:28px;
+  background:linear-gradient(160deg,#0c4a6e,#071f35);
+  clip-path:ellipse(58% 100% at 50% 100%);
+}
+.wc-wave2{
+  position:absolute;bottom:6px;left:0;right:0;height:16px;
+  background:rgba(255,255,255,0.1);
+  clip-path:ellipse(72% 100% at 50% 100%);
+  animation:wRock 3s ease-in-out infinite alternate;
+}
+@keyframes wRock{from{clip-path:ellipse(72% 100% at 45% 100%)}to{clip-path:ellipse(72% 100% at 55% 100%)}}
+
+/* body */
+.wc-body{padding:18px 24px 24px;}
+.wc-greeting{font-family:'Fredoka One',cursive;font-size:26px;color:var(--sand);text-align:center;margin-bottom:3px;}
+.wc-sub{text-align:center;font-size:13px;color:var(--ocean-light);margin-bottom:16px;}
+
+/* stats row */
+.wc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.wc-stat{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:9px 4px;text-align:center;}
+.wc-stat-icon{font-size:20px;display:block;margin-bottom:3px;}
+.wc-stat-val{font-family:'Fredoka One',cursive;font-size:17px;color:white;display:block;}
+.wc-stat-lbl{font-size:10px;color:rgba(255,255,255,0.4);display:block;}
+
+/* idle block */
+.wc-idle{
+  background:linear-gradient(135deg,rgba(251,191,36,.13),rgba(249,115,22,.08));
+  border:1px solid rgba(251,191,36,.3);
+  border-radius:14px;padding:12px 14px;
+  display:flex;align-items:center;gap:12px;margin-bottom:14px;
+}
+.wc-idle-icon{font-size:34px;animation:coinFlip 2s ease-in-out infinite;flex-shrink:0;}
+@keyframes coinFlip{0%,100%{transform:rotateY(0)}50%{transform:rotateY(180deg)}}
+.wc-idle-title{font-family:'Fredoka One',cursive;font-size:14px;color:var(--sand);margin-bottom:2px;}
+.wc-idle-desc{font-size:11px;color:rgba(255,255,255,.45);}
+.wc-idle-amt{font-family:'Fredoka One',cursive;font-size:24px;color:var(--gold);text-shadow:0 0 14px rgba(251,191,36,.5);flex-shrink:0;white-space:nowrap;}
+
+/* daily bonuses */
+.wc-day-lbl{font-size:12px;font-family:'Fredoka One',cursive;color:rgba(255,255,255,.45);margin-bottom:6px;}
+.wc-bonuses{display:flex;gap:6px;margin-bottom:18px;overflow-x:auto;padding-bottom:2px;}
+.wc-bonus{
+  flex:0 0 64px;background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);border-radius:12px;
+  padding:8px 4px;text-align:center;cursor:pointer;
+  transition:all .2s;position:relative;
+}
+.wc-bonus:hover{background:rgba(255,255,255,.13);transform:translateY(-2px);}
+.wc-bonus.done{opacity:.5;cursor:default;}
+.wc-bonus.done::after{
+  content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:26px;color:#4ade80;background:rgba(0,0,0,.35);border-radius:12px;
+  font-family:'Fredoka One',cursive;
+}
+.wc-bonus.today{border-color:var(--gold);background:rgba(251,191,36,.1);}
+.wc-bonus-d{font-size:9px;color:rgba(255,255,255,.35);margin-bottom:3px;}
+.wc-bonus-i{font-size:20px;display:block;margin-bottom:2px;}
+.wc-bonus-v{font-family:'Fredoka One',cursive;font-size:13px;color:var(--gold);}
+.wc-bonus-s{font-size:9px;color:rgba(255,255,255,.35);}
+
+/* CTA button */
+.wc-btn{
+  width:100%;padding:16px;border:none;border-radius:16px;
+  background:linear-gradient(135deg,#f97316,#ef4444);
+  color:white;font-family:'Fredoka One',cursive;font-size:20px;
+  cursor:pointer;box-shadow:0 6px 20px rgba(249,115,22,.45);
+  transition:all .2s;position:relative;overflow:hidden;
+}
+.wc-btn::after{
+  content:'';position:absolute;top:-50%;left:-60%;width:40%;height:200%;
+  background:rgba(255,255,255,.22);transform:skewX(-20deg);
+  animation:shine 3s ease-in-out infinite;
+}
+@keyframes shine{0%,100%{left:-60%}50%{left:120%}}
+.wc-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(249,115,22,.55);}
+.wc-btn:active{transform:scale(.98);}
+
+/* ── BACKGROUND ── */
+.ocean-bg{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0;overflow:hidden;}
+.wave{position:absolute;width:200%;height:150px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'%3E%3Cpath d='M0,60 C150,100 350,0 600,60 C850,120 1050,20 1200,60 L1200,120 L0,120 Z' fill='%230ea5e9' opacity='0.3'/%3E%3C/svg%3E") repeat-x;animation:waveMove 8s linear infinite;}
+.wave2{bottom:0;opacity:.15;animation:waveMove 12s linear infinite reverse;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'%3E%3Cpath d='M0,40 C200,80 400,0 600,50 C800,100 1000,10 1200,50 L1200,120 L0,120 Z' fill='%237dd3fc' opacity='0.5'/%3E%3C/svg%3E") repeat-x;}
+@keyframes waveMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ── APP ── */
+.app{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:10px;}
+
+/* ── HEADER ── */
+.header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:rgba(0,0,0,0.3);backdrop-filter:blur(10px);border-radius:20px;border:1px solid var(--card-border);margin-bottom:12px;}
+.logo{font-family:'Fredoka One',cursive;font-size:28px;color:var(--sand);text-shadow:0 2px 10px rgba(249,163,22,.5);}
+.logo span{color:var(--ocean-light);}
+.stats-bar{display:flex;gap:10px;}
+.stat-pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border-radius:20px;padding:6px 14px;font-weight:700;font-size:14px;border:1px solid rgba(255,255,255,.2);}
+.stat-pill .icon{font-size:18px;}
+.gem-pill{cursor:pointer;border-color:rgba(167,139,250,.5);background:rgba(124,58,237,.2);transition:all .2s;}
+.gem-pill:hover{background:rgba(124,58,237,.35);}
+@keyframes gemBurst{0%{transform:scale(1)}30%{transform:scale(1.3);filter:drop-shadow(0 0 20px rgba(167,139,250,1))}100%{transform:scale(1)}}
+.gem-pill.burst{animation:gemBurst .6s ease-out;}
+
+/* ── XP ── */
+.xp-section{margin-bottom:12px;}
+.xp-bar-wrap{background:rgba(0,0,0,.3);border-radius:20px;padding:6px 14px;display:flex;align-items:center;gap:10px;border:1px solid var(--card-border);}
+.xp-label{font-family:'Fredoka One',cursive;font-size:13px;color:var(--sand);white-space:nowrap;}
+.xp-bar{flex:1;height:12px;background:rgba(255,255,255,.1);border-radius:6px;overflow:hidden;}
+.xp-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#7c3aed,#ec4899);transition:width .5s;}
+.xp-num{font-size:11px;color:var(--ocean-light);white-space:nowrap;}
+
+/* ── RACE VIEWPORT ── */
+.race-viewport{width:100%;height:260px;overflow:hidden;border-radius:20px;border:2px solid rgba(255,255,255,.3);box-shadow:0 8px 32px rgba(0,0,0,.5);position:relative;margin-bottom:12px;background:#bae6fd;}
+.race-world{position:absolute;top:0;left:0;width:3200px;height:260px;will-change:transform;transition:transform .12s linear;}
+.rw-sky{position:absolute;top:0;left:0;right:0;height:70px;background:linear-gradient(180deg,#93c5fd,#bae6fd);}
+.rw-cloud{position:absolute;background:white;border-radius:20px;opacity:.85;}
+.rw-cloud::before{content:'';position:absolute;background:white;border-radius:50%;}
+.rw-sand{position:absolute;top:50px;left:0;right:0;height:38px;background:linear-gradient(180deg,#fde68a,#f59e0b);}
+.rw-grass{position:absolute;top:48px;left:0;right:0;height:14px;background:linear-gradient(180deg,#4ade80,#22c55e);border-bottom:2px solid #16a34a;}
+.rw-foam{position:absolute;top:86px;left:0;right:0;height:10px;background:linear-gradient(180deg,rgba(255,255,255,.8),rgba(255,255,255,0));}
+.rw-water{position:absolute;top:88px;left:0;right:0;bottom:0;background:linear-gradient(180deg,#38bdf8,#0369a1);overflow:hidden;}
+.rw-water::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(180deg,transparent 0,transparent 28px,rgba(255,255,255,.07) 28px,rgba(255,255,255,.07) 32px);}
+.rw-water::after{content:'';position:absolute;top:0;left:-100%;right:-100%;bottom:0;background:repeating-linear-gradient(90deg,transparent 0,transparent 120px,rgba(255,255,255,.04) 120px,rgba(255,255,255,.04) 122px);animation:waterShimmer 3s linear infinite;}
+@keyframes waterShimmer{from{transform:translateX(0)}to{transform:translateX(122px)}}
+.rw-lane-divider{position:absolute;left:0;right:0;height:1px;background:rgba(255,255,255,.15);}
+.rw-banner{position:absolute;top:88px;bottom:0;width:6px;background:repeating-linear-gradient(180deg,#111 0,#111 8px,#fff 8px,#fff 16px);z-index:10;}
+.rw-banner::before{content:attr(data-label);position:absolute;top:-26px;left:50%;transform:translateX(-50%);font-family:'Fredoka One',cursive;font-size:15px;color:white;text-shadow:0 2px 6px rgba(0,0,0,.7);white-space:nowrap;background:rgba(0,0,0,.35);padding:2px 10px;border-radius:8px;}
+.rw-start{left:80px;}
+.rw-finish{left:3050px;background:repeating-linear-gradient(180deg,#000 0,#000 8px,#f97316 8px,#f97316 16px);}
+.rw-finish::after{content:'🏁';position:absolute;top:-20px;left:4px;font-size:22px;}
+.rw-marker{position:absolute;top:56px;font-family:'Fredoka One',cursive;font-size:11px;color:rgba(255,255,255,.6);background:rgba(0,0,0,.25);padding:2px 6px;border-radius:6px;}
+.rw-palm{position:absolute;top:0;user-select:none;pointer-events:none;z-index:5;}
+.rw-beach-item{position:absolute;font-size:20px;top:52px;pointer-events:none;z-index:4;filter:drop-shadow(0 2px 3px rgba(0,0,0,.3));}
+.lane{position:absolute;left:0;right:0;height:38px;display:flex;align-items:center;}
+.lane-0{top:92px;} .lane-1{top:126px;} .lane-2{top:160px;} .lane-3{top:194px;}
+.race-progress-bar{position:absolute;bottom:8px;left:16px;right:16px;height:6px;background:rgba(0,0,0,.3);border-radius:3px;z-index:20;overflow:hidden;}
+.race-progress-fill{height:100%;background:linear-gradient(90deg,#ec4899,#f97316,#fbbf24);border-radius:3px;transition:width .15s;width:0%;}
+.race-dist-label{position:absolute;bottom:18px;right:16px;font-family:'Fredoka One',cursive;font-size:12px;color:rgba(255,255,255,.8);z-index:20;text-shadow:0 1px 4px rgba(0,0,0,.5);}
+
+/* ── SURFERS ── */
+.surfer{position:absolute;display:flex;align-items:center;gap:4px;transition:left .2s linear;}
+.surfer-stack{position:relative;display:flex;flex-direction:column;align-items:center;}
+.surfer-hat{font-size:13px;line-height:1;margin-bottom:-4px;position:relative;z-index:3;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));}
+.surfer-suit-badge{position:absolute;right:-8px;bottom:2px;font-size:10px;z-index:4;}
+.surfer-body{display:flex;flex-direction:column;align-items:center;animation:surfBob 1s ease-in-out infinite;}
+.surfer-char{font-size:22px;line-height:1;position:relative;z-index:2;margin-bottom:-4px;}
+.surfer-board-svg svg{display:block;}
+.surfer-wake{position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);font-size:14px;opacity:.7;animation:wakeAnim .6s ease-in-out infinite alternate;white-space:nowrap;}
+@keyframes wakeAnim{from{opacity:.4;transform:translateX(-50%) scaleX(.8)}to{opacity:.9;transform:translateX(-50%) scaleX(1.1)}}
+.surfer-name{font-size:10px;font-weight:800;background:rgba(0,0,0,.55);padding:2px 7px;border-radius:8px;white-space:nowrap;margin-left:4px;border:1px solid rgba(255,255,255,.2);}
+@keyframes surfBob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-5px) rotate(3deg)}}
+.surfer.player .surfer-body{animation:surfBobP .75s ease-in-out infinite;}
+@keyframes surfBobP{0%,100%{transform:translateY(0) rotate(-5deg) scale(1.15)}50%{transform:translateY(-7px) rotate(5deg) scale(1.15)}}
+.surfer.boosted .surfer-body{filter:drop-shadow(0 0 8px gold);}
+.surfer.shielded .surfer-body::after{content:'🛡️';position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:14px;animation:shieldP 1s ease-in-out infinite;}
+@keyframes shieldP{0%,100%{opacity:1}50%{opacity:.5}}
+.surfer.frozen .surfer-body{filter:hue-rotate(220deg) saturate(2);}
+.surfer.hit-shark{animation:hitShark .6s ease-out !important;}
+.surfer.hit-octopus{animation:hitOcto .8s ease-out !important;}
+.surfer.hit-boat{animation:hitBoat .5s ease-out !important;}
+@keyframes hitShark{0%,100%{filter:none}20%,60%{filter:drop-shadow(0 0 12px red) brightness(1.6)}}
+@keyframes hitOcto{0%,100%{filter:none}25%,75%{filter:drop-shadow(0 0 14px purple) hue-rotate(90deg)}}
+@keyframes hitBoat{0%{transform:translateX(0)}20%{transform:translateX(30px)}100%{transform:translateX(0)}}
+
+/* ── OBSTACLES ── */
+.obstacle{position:absolute;z-index:8;pointer-events:none;display:flex;flex-direction:column;align-items:center;}
+.obstacle-icon{font-size:26px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5));}
+.obs-shark .obstacle-icon{animation:obsShark 1.2s ease-in-out infinite;}
+.obs-octopus .obstacle-icon{animation:obsOcto 2s ease-in-out infinite;}
+.obs-boat .obstacle-icon{animation:obsBoat .8s linear infinite;}
+.obs-ring .obstacle-icon{animation:obsFloat 1s ease-in-out infinite alternate;}
+@keyframes obsFloat{from{transform:translateY(0)}to{transform:translateY(-6px)}}
+@keyframes obsShark{0%{transform:translateX(0) rotate(-5deg)}50%{transform:translateX(6px) rotate(5deg)}100%{transform:translateX(0) rotate(-5deg)}}
+@keyframes obsOcto{0%,100%{transform:scale(1) rotate(-4deg)}50%{transform:scale(1.1) rotate(4deg)}}
+@keyframes obsBoat{0%,100%{transform:translateX(0) rotate(-2deg)}50%{transform:translateX(8px) rotate(2deg)}}
+.obs-label{font-size:9px;font-weight:800;padding:1px 5px;border-radius:5px;margin-top:2px;white-space:nowrap;backdrop-filter:blur(4px);}
+.obs-shark .obs-label{background:rgba(239,68,68,.85);color:white;}
+.obs-octopus .obs-label{background:rgba(124,58,237,.85);color:white;}
+.obs-boat .obs-label{background:rgba(16,185,129,.85);color:white;}
+.obs-ring .obs-label{background:rgba(59,130,246,.85);color:white;}
+.event-toast{position:absolute;z-index:30;pointer-events:none;font-family:'Fredoka One',cursive;font-size:13px;padding:4px 10px;border-radius:10px;white-space:nowrap;animation:toastUp 1.4s ease-out forwards;text-shadow:0 1px 3px rgba(0,0,0,.4);}
+.toast-bad{background:rgba(239,68,68,.9);color:white;}
+.toast-good{background:rgba(16,185,129,.9);color:white;}
+.toast-info{background:rgba(251,191,36,.9);color:#1a1a1a;}
+@keyframes toastUp{0%{transform:translateY(0) scale(1);opacity:1}60%{transform:translateY(-36px) scale(1.05);opacity:1}100%{transform:translateY(-60px) scale(.8);opacity:0}}
+.obs-status{position:absolute;top:8px;left:8px;z-index:25;display:flex;flex-direction:column;gap:3px;pointer-events:none;}
+.obs-status-item{font-size:11px;font-weight:800;padding:3px 8px;border-radius:8px;backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.3);white-space:nowrap;}
+
+/* ── ACTIONS ── */
+.actions-bar{display:flex;gap:10px;margin-bottom:12px;}
+.action-btn{flex:1;padding:14px;border-radius:14px;border:none;cursor:pointer;font-family:'Fredoka One',cursive;font-size:16px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.action-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.3);}
+.btn-race{background:linear-gradient(135deg,#f97316,#ef4444);color:white;box-shadow:0 4px 15px rgba(249,115,22,.4);flex:2;}
+.btn-race.racing{background:linear-gradient(135deg,#ef4444,#dc2626);animation:racePulse 1s ease-in-out infinite;}
+@keyframes racePulse{0%,100%{box-shadow:0 4px 15px rgba(239,68,68,.4)}50%{box-shadow:0 4px 25px rgba(239,68,68,.8)}}
+.btn-train{background:linear-gradient(135deg,var(--purple),#6d28d9);color:white;box-shadow:0 4px 15px rgba(124,58,237,.4);}
+.btn-club{background:linear-gradient(135deg,var(--palm),#15803d);color:white;box-shadow:0 4px 15px rgba(22,163,74,.4);}
+
+/* ── TABS ── */
+.tab-bar{display:flex;gap:6px;margin-bottom:12px;}
+.tab-btn{padding:8px 16px;border-radius:20px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:white;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700;font-size:13px;transition:all .2s;}
+.tab-btn:hover,.tab-btn.active{background:rgba(255,255,255,.2);}
+.tab-btn.active{background:linear-gradient(135deg,var(--ocean),var(--purple));}
+
+/* ── CARDS ── */
+.main-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
+.card{background:var(--card);backdrop-filter:blur(10px);border-radius:16px;border:1px solid var(--card-border);padding:16px;box-shadow:0 4px 20px rgba(0,0,0,.2);}
+.card-title{font-family:'Fredoka One',cursive;font-size:16px;color:var(--sand);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+
+/* ── BOOSTS ── */
+.boost-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.boost-btn{background:linear-gradient(135deg,rgba(255,255,255,.15),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:10px 8px;cursor:pointer;text-align:center;transition:all .2s;color:white;font-family:'Nunito',sans-serif;font-weight:700;font-size:12px;}
+.boost-btn:hover{transform:scale(1.05);background:rgba(255,255,255,.2);}
+.boost-btn.active{background:linear-gradient(135deg,var(--accent),#f59e0b);border-color:var(--gold);box-shadow:0 0 15px rgba(249,163,22,.4);}
+.boost-btn.on-cooldown{opacity:.5;cursor:not-allowed;}
+.boost-icon{font-size:22px;display:block;margin-bottom:4px;}
+.cooldown-bar{height:3px;background:rgba(255,255,255,.1);border-radius:2px;margin-top:4px;overflow:hidden;}
+.cooldown-fill{height:100%;background:var(--accent);transition:width .1s;}
+
+/* ── EQUIP ── */
+.equip-grid{display:flex;flex-direction:column;gap:8px;}
+.equip-item{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.08);border-radius:10px;padding:8px 10px;cursor:pointer;border:2px solid transparent;transition:all .2s;}
+.equip-item:hover{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.15);}
+.equip-item.selected{border-color:var(--gold);background:rgba(251,191,36,.15);}
+.equip-item.not-owned{opacity:.75;}
+.equip-icon{font-size:24px;}
+.equip-info{flex:1;}
+.equip-name{font-weight:700;font-size:13px;}
+.equip-stat{font-size:11px;color:var(--ocean-light);}
+.equip-badge{font-size:10px;font-weight:800;padding:3px 8px;border-radius:8px;}
+
+/* ── LEADERBOARD ── */
+.lb-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;margin-bottom:4px;background:rgba(255,255,255,.05);font-size:12px;font-weight:700;}
+.lb-item.you{background:rgba(251,191,36,.2);border:1px solid rgba(251,191,36,.3);}
+.lb-rank{width:22px;text-align:center;font-family:'Fredoka One',cursive;font-size:14px;}
+.lb-rank.gold{color:#fbbf24;} .lb-rank.silver{color:#d1d5db;} .lb-rank.bronze{color:#d97706;}
+.lb-avatar{font-size:18px;}
+.lb-name{flex:1;}
+.lb-score{color:var(--gold);}
+
+/* ── CLUB ── */
+.club-inner{display:grid;grid-template-columns:1fr 2fr;gap:16px;align-items:center;}
+.club-badge{font-size:50px;margin-bottom:4px;}
+.club-name{font-family:'Fredoka One',cursive;font-size:18px;color:var(--sand);}
+.club-members{font-size:12px;color:var(--ocean-light);}
+.club-war{background:rgba(0,0,0,.3);border-radius:12px;padding:12px;}
+.war-title{font-family:'Fredoka One',cursive;font-size:14px;color:var(--accent);margin-bottom:8px;}
+.war-vs{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.war-team{flex:1;text-align:center;}
+.war-team-name{font-weight:700;font-size:13px;}
+.war-score{font-family:'Fredoka One',cursive;font-size:20px;color:var(--gold);}
+.war-divider{font-family:'Fredoka One',cursive;font-size:18px;}
+.war-bar{height:8px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;}
+.war-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--ocean),var(--accent));transition:width .5s;}
+.war-timer{font-size:11px;color:var(--ocean-light);text-align:right;margin-top:4px;}
+
+/* ── RESULT ── */
+.result-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);z-index:150;display:none;align-items:center;justify-content:center;}
+.result-overlay.open{display:flex;}
+.result-card{background:linear-gradient(135deg,#0c4a6e,#1e3a5f);border:2px solid var(--card-border);border-radius:28px;padding:36px;text-align:center;animation:modalIn .4s ease-out;min-width:300px;}
+.result-place{font-family:'Fredoka One',cursive;font-size:80px;line-height:1;}
+.result-place.p1{color:#fbbf24;text-shadow:0 0 30px rgba(251,191,36,.5);}
+.result-place.p2{color:#d1d5db;}
+.result-place.p3{color:#d97706;}
+.result-place.p4{color:#94a3b8;}
+.result-label{font-family:'Fredoka One',cursive;font-size:24px;color:var(--sand);margin:8px 0;}
+.result-rewards{display:flex;gap:16px;justify-content:center;margin:16px 0;}
+.reward-item{text-align:center;}
+.reward-icon{font-size:28px;}
+.reward-val{font-weight:700;font-size:14px;color:var(--gold);}
+.result-btn{background:linear-gradient(135deg,#f97316,#ef4444);border:none;border-radius:14px;padding:14px 36px;font-family:'Fredoka One',cursive;font-size:18px;color:white;cursor:pointer;transition:all .2s;box-shadow:0 4px 15px rgba(249,115,22,.4);}
+.result-btn:hover{transform:scale(1.05);}
+
+/* ── MODALS ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(5px);z-index:100;display:none;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:linear-gradient(135deg,#0c4a6e,#075985);border:2px solid var(--card-border);border-radius:24px;padding:28px;min-width:320px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.6);animation:modalIn .3s ease-out;position:relative;}
+@keyframes modalIn{from{transform:scale(.8) translateY(20px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.modal-title{font-family:'Fredoka One',cursive;font-size:22px;color:var(--sand);margin-bottom:16px;}
+.modal-close{position:absolute;top:12px;right:16px;background:none;border:none;color:white;font-size:24px;cursor:pointer;opacity:.6;transition:opacity .2s;}
+.modal-close:hover{opacity:1;}
+
+/* clubs */
+.clubs-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.club-option{background:rgba(255,255,255,.08);border-radius:12px;padding:14px;cursor:pointer;border:2px solid transparent;text-align:center;transition:all .2s;}
+.club-option:hover{border-color:rgba(255,255,255,.3);transform:scale(1.02);}
+.club-option.joined{border-color:var(--gold);background:rgba(251,191,36,.15);}
+.co-badge{font-size:36px;margin-bottom:6px;}
+.co-name{font-family:'Fredoka One',cursive;font-size:14px;color:var(--sand);}
+.co-info{font-size:11px;color:var(--ocean-light);margin-top:2px;}
+
+/* gem shop */
+.gem-packages{display:flex;flex-direction:column;gap:10px;margin-bottom:18px;}
+.gem-package{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.07);border:2px solid rgba(167,139,250,.2);border-radius:16px;padding:14px 16px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.gem-package:hover{border-color:rgba(167,139,250,.6);transform:translateY(-2px);box-shadow:0 6px 20px rgba(124,58,237,.3);background:rgba(124,58,237,.12);}
+.gem-package.popular{border-color:var(--gold);background:rgba(251,191,36,.07);}
+.gem-package.popular:hover{box-shadow:0 6px 22px rgba(251,191,36,.35);}
+.gp-badge{position:absolute;top:-1px;right:14px;background:linear-gradient(135deg,var(--gold),#f59e0b);color:#1a1a1a;font-family:'Fredoka One',cursive;font-size:10px;padding:3px 10px;border-radius:0 0 8px 8px;}
+.gp-gems{display:flex;flex-direction:column;align-items:center;min-width:62px;}
+.gp-gems-icon{font-size:28px;line-height:1;}
+.gp-gems-count{font-family:'Fredoka One',cursive;font-size:20px;color:#c4b5fd;}
+.gp-gems-label{font-size:10px;color:rgba(255,255,255,.4);}
+.gp-divider{width:1px;height:40px;background:rgba(255,255,255,.12);flex-shrink:0;}
+.gp-info{flex:1;}
+.gp-name{font-family:'Fredoka One',cursive;font-size:15px;color:white;margin-bottom:2px;}
+.gp-desc{font-size:11px;color:rgba(255,255,255,.45);}
+.gp-price{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;}
+.gp-price-main{font-family:'Fredoka One',cursive;font-size:22px;color:var(--gold);}
+.gp-price-unit{font-size:10px;color:rgba(255,255,255,.35);}
+.gp-price-save{font-size:11px;font-weight:800;color:#4ade80;}
+.gem-shop-note{text-align:center;font-size:11px;color:rgba(255,255,255,.3);line-height:1.6;}
+@keyframes gemParticleFly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(.3);opacity:0}}
+
+/* ── NOTIF ── */
+.notif{position:fixed;top:80px;right:20px;z-index:200;background:linear-gradient(135deg,#f97316,#ef4444);border-radius:12px;padding:10px 18px;font-family:'Fredoka One',cursive;font-size:15px;color:white;box-shadow:0 4px 20px rgba(0,0,0,.4);pointer-events:none;}
+
+/* ── BOOST PARTICLES ── */
+.boost-particle{position:absolute;pointer-events:none;font-size:14px;animation:boostFly .8s ease-out forwards;}
+@keyframes boostFly{0%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(-40px) scale(0);opacity:0}}
+
+@media(max-width:768px){
+  .main-grid{grid-template-columns:1fr;}
+  .stats-bar{gap:6px;}
+  .stat-pill{padding:4px 10px;font-size:12px;}
+  .logo{font-size:20px;}
+  .club-inner{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ WELCOME POPUP ══════════════ -->
+<div id="welcomeOverlay">
+  <div class="wc">
+    <div class="wc-top">
+      <div class="wc-palm l">🌴</div>
+      <div class="wc-palm r">🌴</div>
+      <div class="wc-star" style="left:28%;top:14px;animation-delay:0s;font-size:12px">⭐</div>
+      <div class="wc-star" style="left:54%;top:9px;animation-delay:.45s;font-size:10px">✨</div>
+      <div class="wc-star" style="left:74%;top:22px;animation-delay:.9s;font-size:11px">⭐</div>
+      <div class="wc-star" style="left:18%;top:24px;animation-delay:.65s;font-size:10px">✨</div>
+      <div class="wc-char">🐱</div>
+      <div class="wc-wave2"></div>
+      <div class="wc-wave"></div>
+    </div>
+    <div class="wc-body">
+      <div class="wc-greeting">Привет, Юрий! 👋</div>
+      <div class="wc-sub">Рады снова тебя видеть в Surf Rider!</div>
+
+      <div class="wc-stats">
+        <div class="wc-stat">
+          <span class="wc-stat-icon">⭐</span>
+          <span class="wc-stat-val">22</span>
+          <span class="wc-stat-lbl">Уровень</span>
+        </div>
+        <div class="wc-stat">
+          <span class="wc-stat-icon">🏆</span>
+          <span class="wc-stat-val">1 240</span>
+          <span class="wc-stat-lbl">Кубки</span>
+        </div>
+        <div class="wc-stat">
+          <span class="wc-stat-icon">🤝</span>
+          <span class="wc-stat-val">#4</span>
+          <span class="wc-stat-lbl">Место в клубе</span>
+        </div>
+      </div>
+
+      <div class="wc-idle">
+        <div class="wc-idle-icon">🪙</div>
+        <div>
+          <div class="wc-idle-title">Пока тебя не было...</div>
+          <div class="wc-idle-desc">Чакушка не терял времени!</div>
+        </div>
+        <div class="wc-idle-amt" id="wcAmt">+2 450</div>
+      </div>
+
+      <div class="wc-day-lbl">🎁 Ежедневные награды</div>
+      <div class="wc-bonuses">
+        <div class="wc-bonus done">
+          <div class="wc-bonus-d">День 1</div>
+          <span class="wc-bonus-i">🪙</span>
+          <div class="wc-bonus-v">200</div>
+          <div class="wc-bonus-s">монет</div>
+        </div>
+        <div class="wc-bonus done">
+          <div class="wc-bonus-d">День 2</div>
+          <span class="wc-bonus-i">🪙</span>
+          <div class="wc-bonus-v">400</div>
+          <div class="wc-bonus-s">монет</div>
+        </div>
+        <div class="wc-bonus done">
+          <div class="wc-bonus-d">День 3</div>
+          <span class="wc-bonus-i">💎</span>
+          <div class="wc-bonus-v">5</div>
+          <div class="wc-bonus-s">кристал.</div>
+        </div>
+        <div class="wc-bonus today" id="todayBonus" onclick="claimBonus(this)">
+          <div class="wc-bonus-d">День 4 ✦</div>
+          <span class="wc-bonus-i">🎁</span>
+          <div class="wc-bonus-v">600</div>
+          <div class="wc-bonus-s">монет</div>
+        </div>
+        <div class="wc-bonus">
+          <div class="wc-bonus-d">День 5</div>
+          <span class="wc-bonus-i">💎</span>
+          <div class="wc-bonus-v">10</div>
+          <div class="wc-bonus-s">кристал.</div>
+        </div>
+        <div class="wc-bonus">
+          <div class="wc-bonus-d">День 6</div>
+          <span class="wc-bonus-i">⚡</span>
+          <div class="wc-bonus-v">Буст</div>
+          <div class="wc-bonus-s">×2 скор.</div>
+        </div>
+        <div class="wc-bonus">
+          <div class="wc-bonus-d">День 7</div>
+          <span class="wc-bonus-i">👑</span>
+          <div class="wc-bonus-v">Корона</div>
+          <div class="wc-bonus-s">шлем</div>
+        </div>
+      </div>
+
+      <button class="wc-btn" onclick="closeWelcome()">🏄 Поехали кататься!</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ BACKGROUND ══════════════ -->
+<div class="ocean-bg">
+  <div class="wave" style="bottom:0"></div>
+  <div class="wave wave2"></div>
+</div>
+
+<!-- ══════════════ APP ══════════════ -->
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">🏄 Surf<span>Rider</span></div>
+    <div class="stats-bar">
+      <div class="stat-pill"><span class="icon">🪙</span><span id="coins">12 450</span></div>
+      <div class="stat-pill gem-pill" onclick="openGemShop()"><span class="icon">💎</span><span id="gems">85</span><span style="font-size:11px;opacity:.6;margin-left:2px">+</span></div>
+      <div class="stat-pill"><span class="icon">🏆</span><span id="trophies">1 240</span></div>
+      <div class="stat-pill"><span class="icon">👤</span>Юрий</div>
+    </div>
+  </div>
+
+  <!-- XP -->
+  <div class="xp-section">
+    <div class="xp-bar-wrap">
+      <div class="xp-label">⭐ Уровень 22</div>
+      <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:62%"></div></div>
+      <div class="xp-num" id="xpNum">6200 / 10000 XP</div>
+    </div>
+  </div>
+
+  <!-- RACE -->
+  <div class="race-viewport" id="raceViewport">
+    <div class="race-world" id="raceWorld">
+      <div class="rw-sky"></div>
+      <div class="rw-cloud" style="left:200px;top:8px;width:70px;height:22px"><div style="position:absolute;width:36px;height:28px;border-radius:50%;background:white;top:-14px;left:12px"></div></div>
+      <div class="rw-cloud" style="left:600px;top:15px;width:90px;height:20px"><div style="position:absolute;width:45px;height:32px;border-radius:50%;background:white;top:-18px;left:20px"></div></div>
+      <div class="rw-cloud" style="left:1100px;top:6px;width:60px;height:18px"><div style="position:absolute;width:30px;height:24px;border-radius:50%;background:white;top:-12px;left:10px"></div></div>
+      <div class="rw-cloud" style="left:1600px;top:12px;width:80px;height:22px"><div style="position:absolute;width:40px;height:30px;border-radius:50%;background:white;top:-16px;left:16px"></div></div>
+      <div class="rw-cloud" style="left:2100px;top:5px;width:100px;height:24px"><div style="position:absolute;width:50px;height:36px;border-radius:50%;background:white;top:-20px;left:24px"></div></div>
+      <div class="rw-cloud" style="left:2600px;top:14px;width:65px;height:18px"><div style="position:absolute;width:32px;height:26px;border-radius:50%;background:white;top:-13px;left:12px"></div></div>
+      <div class="rw-sand"></div>
+      <div class="rw-grass"></div>
+      <div class="rw-foam"></div>
+      <div class="rw-water"></div>
+      <div class="rw-lane-divider" style="top:125px"></div>
+      <div class="rw-lane-divider" style="top:159px"></div>
+      <div class="rw-lane-divider" style="top:193px"></div>
+      <div class="rw-banner rw-start" data-label="СТАРТ"></div>
+      <div class="rw-banner rw-finish" data-label="ФИНИШ"></div>
+      <div class="rw-marker" style="left:800px">25%</div>
+      <div class="rw-marker" style="left:1550px">50%</div>
+      <div class="rw-marker" style="left:2300px">75%</div>
+      <!-- PALMS -->
+      <div class="rw-palm" style="left:160px"><svg width="38" height="68" viewBox="0 0 38 68"><rect x="17" y="28" width="5" height="40" rx="2" fill="#92400e"/><ellipse cx="19" cy="28" rx="18" ry="12" fill="#15803d" transform="rotate(-15 19 28)"/><ellipse cx="19" cy="26" rx="16" ry="10" fill="#16a34a" transform="rotate(10 19 26)"/><ellipse cx="19" cy="24" rx="14" ry="9" fill="#4ade80" transform="rotate(-5 19 24)"/><circle cx="19" cy="30" r="4" fill="#f59e0b"/></svg></div>
+      <div class="rw-palm" style="left:480px"><svg width="32" height="58" viewBox="0 0 32 58"><rect x="13" y="22" width="5" height="36" rx="2" fill="#a16207" transform="rotate(5 16 40)"/><ellipse cx="16" cy="22" rx="15" ry="10" fill="#15803d" transform="rotate(20 16 22)"/><ellipse cx="16" cy="20" rx="13" ry="8" fill="#16a34a" transform="rotate(-8 16 20)"/></svg></div>
+      <div class="rw-palm" style="left:820px"><svg width="40" height="72" viewBox="0 0 40 72"><rect x="17" y="30" width="5" height="42" rx="2" fill="#92400e"/><ellipse cx="20" cy="30" rx="19" ry="13" fill="#15803d" transform="rotate(-20 20 30)"/><ellipse cx="20" cy="28" rx="17" ry="11" fill="#16a34a" transform="rotate(5 20 28)"/><ellipse cx="20" cy="26" rx="15" ry="10" fill="#4ade80"/><circle cx="20" cy="32" r="5" fill="#f59e0b"/></svg></div>
+      <div class="rw-palm" style="left:1150px"><svg width="34" height="62" viewBox="0 0 34 62"><rect x="14" y="24" width="5" height="38" rx="2" fill="#a16207" transform="rotate(-6 17 43)"/><ellipse cx="17" cy="24" rx="16" ry="11" fill="#15803d" transform="rotate(15 17 24)"/><ellipse cx="17" cy="22" rx="14" ry="9" fill="#16a34a" transform="rotate(-12 17 22)"/></svg></div>
+      <div class="rw-palm" style="left:1500px"><svg width="38" height="68" viewBox="0 0 38 68"><rect x="17" y="28" width="5" height="40" rx="2" fill="#92400e"/><ellipse cx="19" cy="28" rx="18" ry="12" fill="#15803d" transform="rotate(-15 19 28)"/><ellipse cx="19" cy="26" rx="16" ry="10" fill="#16a34a" transform="rotate(10 19 26)"/><ellipse cx="19" cy="24" rx="14" ry="9" fill="#4ade80"/><circle cx="19" cy="30" r="4" fill="#f59e0b"/></svg></div>
+      <div class="rw-palm" style="left:1850px"><svg width="36" height="65" viewBox="0 0 36 65"><rect x="15" y="26" width="5" height="39" rx="2" fill="#a16207"/><ellipse cx="18" cy="26" rx="17" ry="11" fill="#15803d" transform="rotate(18 18 26)"/><ellipse cx="18" cy="24" rx="15" ry="9" fill="#16a34a" transform="rotate(-10 18 24)"/></svg></div>
+      <div class="rw-palm" style="left:2200px"><svg width="42" height="74" viewBox="0 0 42 74"><rect x="18" y="32" width="6" height="42" rx="2" fill="#92400e"/><ellipse cx="21" cy="32" rx="20" ry="14" fill="#15803d" transform="rotate(-18 21 32)"/><ellipse cx="21" cy="30" rx="18" ry="12" fill="#16a34a" transform="rotate(8 21 30)"/><ellipse cx="21" cy="28" rx="16" ry="11" fill="#4ade80"/><circle cx="21" cy="34" r="5" fill="#f59e0b"/></svg></div>
+      <div class="rw-palm" style="left:2550px"><svg width="34" height="62" viewBox="0 0 34 62"><rect x="14" y="24" width="5" height="38" rx="2" fill="#a16207" transform="rotate(4 17 43)"/><ellipse cx="17" cy="24" rx="16" ry="11" fill="#15803d" transform="rotate(-20 17 24)"/><ellipse cx="17" cy="22" rx="14" ry="9" fill="#16a34a" transform="rotate(12 17 22)"/></svg></div>
+      <div class="rw-palm" style="left:2880px"><svg width="38" height="68" viewBox="0 0 38 68"><rect x="17" y="28" width="5" height="40" rx="2" fill="#92400e"/><ellipse cx="19" cy="28" rx="18" ry="12" fill="#15803d" transform="rotate(-15 19 28)"/><ellipse cx="19" cy="26" rx="16" ry="10" fill="#16a34a" transform="rotate(10 19 26)"/><ellipse cx="19" cy="24" rx="14" ry="9" fill="#4ade80"/><circle cx="19" cy="30" r="4" fill="#f59e0b"/></svg></div>
+      <div class="rw-palm" style="left:3120px"><svg width="36" height="65" viewBox="0 0 36 65"><rect x="15" y="26" width="5" height="39" rx="2" fill="#a16207"/><ellipse cx="18" cy="26" rx="17" ry="11" fill="#15803d" transform="rotate(18 18 26)"/><ellipse cx="18" cy="24" rx="15" ry="9" fill="#16a34a"/></svg></div>
+      <!-- BEACH ITEMS -->
+      <div class="rw-beach-item" style="left:340px">🌂</div>
+      <div class="rw-beach-item" style="left:360px;font-size:13px;top:60px">🦀</div>
+      <div class="rw-beach-item" style="left:680px">⛱️</div>
+      <div class="rw-beach-item" style="left:700px;font-size:12px;top:60px">🐚</div>
+      <div class="rw-beach-item" style="left:1020px;font-size:14px">🦞</div>
+      <div class="rw-beach-item" style="left:1350px">🌂</div>
+      <div class="rw-beach-item" style="left:1660px">⛱️</div>
+      <div class="rw-beach-item" style="left:1680px;font-size:12px;top:60px">⭐</div>
+      <div class="rw-beach-item" style="left:1980px;font-size:13px">🦀</div>
+      <div class="rw-beach-item" style="left:2320px">🌂</div>
+      <div class="rw-beach-item" style="left:2650px">⛱️</div>
+      <div class="rw-beach-item" style="left:2670px;font-size:12px;top:60px">🐚</div>
+      <!-- LANES -->
+      <div class="lane lane-0" id="lane0"></div>
+      <div class="lane lane-1" id="lane1"></div>
+      <div class="lane lane-2" id="lane2"></div>
+      <div class="lane lane-3" id="lane3"></div>
+      <!-- OBSTACLES -->
+      <div id="obstaclesLayer"></div>
+    </div>
+    <div class="obs-status" id="obsStatus"></div>
+    <div class="race-dist-label" id="raceDistLabel"></div>
+    <div class="race-progress-bar"><div class="race-progress-fill" id="raceProgressFill"></div></div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="actions-bar">
+    <button class="action-btn btn-race" id="raceBtn" onclick="startRace()">🏄 Начать гонку</button>
+    <button class="action-btn btn-train" onclick="trainSkill()">💪 Тренировка</button>
+    <button class="action-btn btn-club" onclick="openClubs()">🌊 Клуб</button>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="showTab('boosts',this)">⚡ Бусты</button>
+    <button class="tab-btn" onclick="showTab('equip',this)">🛹 Экипировка</button>
+    <button class="tab-btn" onclick="showTab('leaderboard',this)">🏆 Рейтинг</button>
+    <button class="tab-btn" onclick="showTab('club',this)">🤝 Клуб</button>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+    <div id="tab-boosts" class="card" style="grid-column:span 2">
+      <div class="card-title">⚡ Бусты</div>
+      <div class="boost-grid" id="boostGrid"></div>
+    </div>
+    <div id="tab-boosts-lb" class="card">
+      <div class="card-title">🏆 Топ гонщиков</div>
+      <div id="lbList"></div>
+    </div>
+    <div id="tab-equip" class="card" style="grid-column:span 3;display:none">
+      <div class="card-title">🛹 Экипировка</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px" id="equipGrid"></div>
+    </div>
+    <div id="tab-leaderboard" class="card" style="grid-column:span 3;display:none">
+      <div class="card-title">🏆 Мировой рейтинг</div>
+      <div id="fullLbList" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>
+    </div>
+    <div id="tab-club" class="card" style="grid-column:span 3;display:none">
+      <div class="card-title">🤝 Клуб — Серфёры Бриза</div>
+      <div class="club-inner">
+        <div style="text-align:center">
+          <div class="club-badge">🏝️</div>
+          <div class="club-name">Серфёры Бриза</div>
+          <div class="club-members">👥 28 / 30 участников</div>
+          <div style="margin-top:8px;font-size:12px;color:var(--gold)">Место в лиге: #4</div>
+          <button onclick="openClubs()" style="margin-top:10px;background:linear-gradient(135deg,var(--ocean),var(--purple));border:none;border-radius:10px;padding:8px 16px;color:white;font-family:'Fredoka One',cursive;cursor:pointer;font-size:13px">Сменить клуб</button>
+        </div>
+        <div class="club-war">
+          <div class="war-title">⚔️ Война кланов</div>
+          <div class="war-vs">
+            <div class="war-team"><div class="war-team-name">🏝️ Бриз</div><div class="war-score" id="ourScore">4 820</div></div>
+            <div class="war-divider">VS</div>
+            <div class="war-team"><div class="war-team-name">🌋 Огненные</div><div class="war-score" id="theirScore">3 950</div></div>
+          </div>
+          <div class="war-bar"><div class="war-bar-fill" id="warFill" style="width:55%"></div></div>
+          <div class="war-timer" id="warTimer">До конца: 05:42:18</div>
+          <div style="margin-top:8px;font-size:12px;color:var(--ocean-light)">Участники:</div>
+          <div id="clubMembersList" style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"></div>
+        </div>
+      </div>
+    </div>
+    <div id="tab-boosts-club" class="card" style="grid-column:span 3">
+      <div class="card-title">🤝 Серфёры Бриза — Война кланов</div>
+      <div class="club-inner">
+        <div style="text-align:center"><div class="club-badge">🏝️</div><div class="club-name">Серфёры Бриза</div><div class="club-members">👥 28/30</div></div>
+        <div class="club-war">
+          <div class="war-title">⚔️ LIVE</div>
+          <div class="war-vs">
+            <div class="war-team"><div class="war-team-name">🏝️ Бриз</div><div class="war-score" id="ourScore2">4 820</div></div>
+            <div class="war-divider">VS</div>
+            <div class="war-team"><div class="war-team-name">🌋 Огненные</div><div class="war-score" id="theirScore2">3 950</div></div>
+          </div>
+          <div class="war-bar"><div class="war-bar-fill" style="width:55%"></div></div>
+          <div class="war-timer" id="warTimer2">До конца: 05:42:18</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT OVERLAY -->
+<div class="result-overlay" id="resultOverlay">
+  <div class="result-card">
+    <div class="result-place" id="resultPlace">🥇</div>
+    <div class="result-label" id="resultLabel">1-е место!</div>
+    <div style="font-size:13px;color:var(--ocean-light);margin-bottom:8px" id="resultTime"></div>
+    <div class="result-rewards" id="resultRewards"></div>
+    <button class="result-btn" onclick="closeResult()">Продолжить 🏄</button>
+  </div>
+</div>
+
+<!-- CLUBS MODAL -->
+<div class="modal-overlay" id="clubsModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('clubsModal')">✕</button>
+    <div class="modal-title">🌊 Выбери клуб</div>
+    <div class="clubs-grid">
+      <div class="club-option joined" onclick="joinClub(this,'Серфёры Бриза')">
+        <div class="co-badge">🏝️</div><div class="co-name">Серфёры Бриза</div>
+        <div class="co-info">👥 28/30 · #4</div><div style="font-size:11px;color:var(--gold);margin-top:4px">✓ Вы тут</div>
+      </div>
+      <div class="club-option" onclick="joinClub(this,'Огненные Волны')">
+        <div class="co-badge">🌋</div><div class="co-name">Огненные Волны</div>
+        <div class="co-info">👥 30/30 · #2</div><div style="font-size:11px;color:#ef4444;margin-top:4px">🔒 Полный</div>
+      </div>
+      <div class="club-option" onclick="joinClub(this,'Тихие Воды')">
+        <div class="co-badge">🧊</div><div class="co-name">Тихие Воды</div>
+        <div class="co-info">👥 15/30 · #7</div><div style="font-size:11px;color:var(--palm);margin-top:4px">+ Вступить</div>
+      </div>
+      <div class="club-option" onclick="joinClub(this,'Кракен')">
+        <div class="co-badge">🐙</div><div class="co-name">Кракен</div>
+        <div class="co-info">👥 22/30 · #5</div><div style="font-size:11px;color:var(--palm);margin-top:4px">+ Вступить</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GEM SHOP MODAL -->
+<div class="modal-overlay" id="gemShopModal">
+  <div class="modal" style="max-width:420px;width:92%">
+    <button class="modal-close" onclick="closeModal('gemShopModal')">✕</button>
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:48px;animation:coinFlip 2s ease-in-out infinite;display:inline-block">💎</div>
+      <div class="modal-title" style="margin-bottom:4px">Магазин кристаллов</div>
+      <div style="font-size:12px;color:var(--ocean-light)">Нужны для покупки редкой экипировки</div>
+    </div>
+    <div class="gem-packages">
+      <div class="gem-package" onclick="buyGems(10,10,this)">
+        <div class="gp-gems"><div class="gp-gems-icon">💎</div><div class="gp-gems-count">10</div><div class="gp-gems-label">кристаллов</div></div>
+        <div class="gp-divider"></div>
+        <div class="gp-info"><div class="gp-name">Горсть кристаллов</div><div class="gp-desc">На шлем 🦈 или небольшой апгрейд</div></div>
+        <div class="gp-price"><div class="gp-price-main">10 ФМ</div><div class="gp-price-unit">1 ФМ / шт</div></div>
+      </div>
+      <div class="gem-package popular" onclick="buyGems(50,45,this)">
+        <div class="gp-badge">🔥 POPULAR</div>
+        <div class="gp-gems"><div class="gp-gems-icon">💎</div><div class="gp-gems-count">50</div><div class="gp-gems-label">кристаллов</div></div>
+        <div class="gp-divider"></div>
+        <div class="gp-info"><div class="gp-name">Мешочек кристаллов</div><div class="gp-desc">На доску 🌋 Вулкан + несколько предметов</div></div>
+        <div class="gp-price"><div class="gp-price-main">45 ФМ</div><div class="gp-price-unit">0.9 ФМ / шт</div><div class="gp-price-save">Экономия 10%</div></div>
+      </div>
+      <div class="gem-package" onclick="buyGems(100,85,this)" style="border-color:rgba(74,222,128,.3)">
+        <div class="gp-badge" style="background:linear-gradient(135deg,#4ade80,#16a34a);color:white">💰 ВЫГОДНО</div>
+        <div class="gp-gems"><div class="gp-gems-icon">💎</div><div class="gp-gems-count" style="color:#86efac">100</div><div class="gp-gems-label">кристаллов</div></div>
+        <div class="gp-divider"></div>
+        <div class="gp-info"><div class="gp-name">Сундук кристаллов</div><div class="gp-desc">Всё снаряжение: 🚀 Космос + 👑 Корона</div></div>
+        <div class="gp-price"><div class="gp-price-main">85 ФМ</div><div class="gp-price-unit">0.85 ФМ / шт</div><div class="gp-price-save">Экономия 15%</div></div>
+      </div>
+    </div>
+    <div class="gem-shop-note">💡 ФМ — валюта платформы Фотострана · Зачисление мгновенное</div>
+  </div>
+</div>
+
+<script>
+// ══ STATE ══
+const state = {
+  coins:12450, gems:85, trophies:1240, xp:6200, xpMax:10000, level:22,
+  racing:false, raceInterval:null, idleRate:3, idleInterval:null,
+  clubWarTimer:5*3600+42*60+18, warInterval:null,
+  selectedEquip:{board:'lightning',suit:'neon',helmet:'shark'},
+  boostCooldowns:{}, activeBoosts:{},
+  clubWarScore:{us:4820,them:3950},
+  _pendingIdle:0,
+};
+
+// ══ DATA ══
+const SURFERS=[
+  {name:'Чакушка',  emoji:'🐱',isPlayer:true, speed:1.0,  boardColor:'#ec4899',boardColor2:'#f9a8d4',wake:'〰️💦'},
+  {name:'[ЗФ] mia', emoji:'🐶',speed:0.88, boardColor:'#f97316',boardColor2:'#fed7aa',wake:'〰️'},
+  {name:'[ЗФ] Клёпа',emoji:'🦊',speed:0.92, boardColor:'#22c55e',boardColor2:'#bbf7d0',wake:'〰️'},
+  {name:'Викинг',  emoji:'🐻',speed:0.85, boardColor:'#7c3aed',boardColor2:'#ddd6fe',wake:'〰️'},
+];
+const BOOSTS=[
+  {id:'turbo',name:'Турбо волна',  icon:'⚡',cost:120,duration:15,speedMult:1.4,cooldown:30,desc:'+40% скорость'},
+  {id:'wind', name:'Попутный ветер',icon:'💨',cost:80, duration:20,speedMult:1.25,cooldown:45,desc:'+25% скорость'},
+  {id:'ramp', name:'Трамплин',    icon:'🌊',cost:200,duration:8, speedMult:1.6, cooldown:60,desc:'+60% скорость'},
+  {id:'shield',name:'Щит медузы', icon:'🛡️',cost:150,duration:25,speedMult:1.1, cooldown:40,desc:'Защита+скорость'},
+];
+const EQUIP={
+  board:[
+    {id:'basic',    name:'Доска новичка',icon:'🏄',stat:'+0%',   owned:true, boardColor:'#ec4899',boardColor2:'#f9a8d4',speedBonus:0},
+    {id:'lightning',name:'Молния',      icon:'⚡', stat:'+15%',  owned:true, boardColor:'#f59e0b',boardColor2:'#fde68a',speedBonus:.15},
+    {id:'volcano',  name:'Вулкан',      icon:'🌋', stat:'+25%',  owned:false,boardColor:'#ef4444',boardColor2:'#fca5a5',speedBonus:.25,gemCost:300},
+    {id:'cosmic',   name:'Космос',      icon:'🚀', stat:'+40%',  owned:false,boardColor:'#7c3aed',boardColor2:'#c4b5fd',speedBonus:.40,gemCost:800},
+  ],
+  suit:[
+    {id:'basic',name:'Стандарт',icon:'👕',stat:'+0',       owned:true, overlay:''},
+    {id:'neon', name:'Неон',    icon:'🟢',stat:'+5% ускор',owned:true, overlay:'💚'},
+    {id:'shark',name:'Акула',   icon:'🦈',stat:'+10% ускор',owned:false,overlay:'🦈',gemCost:150},
+    {id:'fire', name:'Огонь',   icon:'🔥',stat:'+12% ускор',owned:false,overlay:'🔥',gemCost:220},
+  ],
+  helmet:[
+    {id:'basic', name:'Без шлема',icon:'😐',stat:'+0',       owned:true, hat:''},
+    {id:'shark', name:'Акула',    icon:'🦈',stat:'+8% удача', owned:true, hat:'🦈'},
+    {id:'dragon',name:'Дракон',   icon:'🐉',stat:'+15% удача',owned:false,hat:'🐉',gemCost:200},
+    {id:'crown', name:'Корона',   icon:'👑',stat:'+20% удача',owned:false,hat:'👑',gemCost:350},
+  ],
+};
+const LEADERBOARD=[
+  {name:'ГромовойАкула',score:45820,emoji:'🦈',you:false},
+  {name:'Серфер2000',   score:38450,emoji:'🤙',you:false},
+  {name:'МорскаяТварь', score:32100,emoji:'🐙',you:false},
+  {name:'Чакушка',      score:28750,emoji:'🐱',you:true},
+  {name:'ВикингМоря',   score:24300,emoji:'⚔️',you:false},
+  {name:'ТропикПро',    score:21500,emoji:'🌴',you:false},
+  {name:'ОгненнаяВолна',score:18200,emoji:'🌋',you:false},
+  {name:'БухтаМистика', score:15400,emoji:'🎭',you:false},
+];
+const OBSTACLE_TYPES={
+  shark:  {emoji:'🦈',label:'АКУЛА!',   cls:'obs-shark',  power:.35,duration:2200,msg:'🦈 Акула атакует!',   msgCls:'toast-bad'},
+  octopus:{emoji:'🐙',label:'ОСЬМИНОГ!',cls:'obs-octopus',power:0,  duration:2800,msg:'🐙 Осьминог тащит!',  msgCls:'toast-bad'},
+  boat:   {emoji:'🚤',label:'+СКОРОСТЬ',cls:'obs-boat',   power:1.9,duration:1800,msg:'🚤 Катер ускоряет!',  msgCls:'toast-good'},
+  ring:   {emoji:'🛟',label:'СПАСЕНИЕ', cls:'obs-ring',   power:0,  duration:3000,msg:'🛟 Спасательный круг!',msgCls:'toast-good'},
+};
+
+// ══ WELCOME ══
+function initWelcome(){
+  const away=30+Math.floor(Math.random()*240);
+  const earned=away*state.idleRate*60;
+  state._pendingIdle=earned;
+  document.getElementById('wcAmt').textContent='+'+earned.toLocaleString('ru-RU');
+}
+function claimBonus(el){
+  if(el.classList.contains('done'))return;
+  el.classList.add('done');
+  state.coins+=600; updateHUD();
+  showNotif('🎁 +600 монет!');
+}
+function closeWelcome(){
+  const o=document.getElementById('welcomeOverlay');
+  if(!o)return;
+  o.classList.add('hide');
+  if(state._pendingIdle){state.coins+=state._pendingIdle;state._pendingIdle=0;updateHUD();}
+  setTimeout(()=>o.remove(),420);
+}
+
+// ══ INIT ══
+function init(){
+  initWelcome();
+  renderSurfers();
+  renderBoosts();
+  renderLeaderboard();
+  renderEquipment();
+  renderClubMembers();
+  startIdleEarning();
+  startWarTimer();
+}
+
+// ══ SURFERS ══
+const WORLD_WIDTH=3200,RACE_START=100,RACE_FINISH=3050;
+const VIEWPORT_W=()=>document.getElementById('raceViewport').clientWidth;
+let surferPx=[RACE_START,RACE_START,RACE_START,RACE_START];
+
+function getPlayerVisual(){
+  return{
+    board:EQUIP.board.find(b=>b.id===state.selectedEquip.board),
+    suit:EQUIP.suit.find(s=>s.id===state.selectedEquip.suit),
+    helmet:EQUIP.helmet.find(h=>h.id===state.selectedEquip.helmet),
+  };
+}
+function makeBoardSVG(c,c2){
+  const g='bg'+c.replace('#','')+Math.floor(Math.random()*9999);
+  return`<svg width="54" height="14" viewBox="0 0 54 14" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="${g}" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="${c2}" stop-opacity=".5"/><stop offset="40%" stop-color="${c}"/>
+      <stop offset="100%" stop-color="${c2}" stop-opacity=".5"/></linearGradient></defs>
+    <path d="M2,7 Q4,2 12,2 L44,2 Q52,2 52,7 Q52,12 44,12 L12,12 Q4,12 2,7 Z" fill="url(#${g})" stroke="white" stroke-width="1" stroke-opacity=".5"/>
+    <line x1="18" y1="3" x2="18" y2="11" stroke="white" stroke-width="1.5" stroke-opacity=".4"/>
+    <line x1="36" y1="3" x2="36" y2="11" stroke="white" stroke-width="1" stroke-opacity=".25"/>
+    <path d="M40,12 L43,18 L46,12" fill="${c}" stroke="white" stroke-width=".5"/>
+  </svg>`;
+}
+function renderSurfers(){
+  const pv=getPlayerVisual();
+  SURFERS.forEach((s,i)=>{
+    const lane=document.getElementById('lane'+i);
+    const bc=(i===0&&Object.keys(state.activeBoosts).length>0)?' boosted':'';
+    let boardColor,boardColor2,wake,charHTML;
+    if(i===0){
+      boardColor=pv.board?.boardColor||s.boardColor;
+      boardColor2=pv.board?.boardColor2||s.boardColor2;
+      wake=Object.keys(state.activeBoosts).length>0?'⚡〰️💦':'〰️💦';
+      const hat=pv.helmet?.hat||'',suit=pv.suit?.overlay||'';
+      charHTML=`<div class="surfer-stack">${hat?`<div class="surfer-hat">${hat}</div>`:''}<div class="surfer-char">${s.emoji}</div>${suit?`<div class="surfer-suit-badge">${suit}</div>`:''}</div>`;
+    }else{
+      boardColor=s.boardColor;boardColor2=s.boardColor2;wake=s.wake;
+      charHTML=`<div class="surfer-char">${s.emoji}</div>`;
+    }
+    lane.innerHTML=`<div class="surfer${s.isPlayer?' player':''}${bc}" id="surfer${i}" style="left:${surferPx[i]}px;display:flex;align-items:center;gap:5px;position:absolute;">
+      <div class="surfer-body" style="position:relative">${charHTML}<div class="surfer-board-svg">${makeBoardSVG(boardColor,boardColor2)}</div><div class="surfer-wake">${wake}</div></div>
+      <div class="surfer-name">${s.name}${s.isPlayer?' 🎮':''}</div></div>`;
+  });
+}
+function updatePlayerSprite(){
+  const el=document.getElementById('surfer0');if(!el)return;
+  const pv=getPlayerVisual();
+  const bc=pv.board?.boardColor||SURFERS[0].boardColor,bc2=pv.board?.boardColor2||SURFERS[0].boardColor2;
+  el.querySelector('.surfer-board-svg').innerHTML=makeBoardSVG(bc,bc2);
+  const st=el.querySelector('.surfer-stack');
+  if(st){const hat=pv.helmet?.hat||'',suit=pv.suit?.overlay||'';
+    st.innerHTML=`${hat?`<div class="surfer-hat">${hat}</div>`:''}<div class="surfer-char">${SURFERS[0].emoji}</div>${suit?`<div class="surfer-suit-badge">${suit}</div>`:''}`;
+  }
+}
+
+// ══ OBSTACLES ══
+let obstacles=[],obsIdCounter=0,spawnScheduler=null;
+const statusBadges={};
+let surferStatus=[0,1,2,3].map(()=>({speedMult:1,frozen:false,shielded:false,frozenUntil:0,boostUntil:0}));
+const COLL_RADIUS=55;
+
+function resetObstacles(){
+  obstacles=[];obsIdCounter=0;
+  surferStatus=[0,1,2,3].map(()=>({speedMult:1,frozen:false,shielded:false,frozenUntil:0,boostUntil:0}));
+  document.getElementById('obstaclesLayer').innerHTML='';
+  document.getElementById('obsStatus').innerHTML='';
+}
+function spawnObstacle(){
+  if(!state.racing)return;
+  const li=Math.floor(Math.random()*4),lt=[92,126,160,194][li];
+  const wx=Math.min(surferPx[li]+400+Math.random()*800,RACE_FINISH-200);
+  const r=Math.random(),type=r<.3?'shark':r<.5?'octopus':r<.75?'boat':'ring';
+  const def=OBSTACLE_TYPES[type],id=++obsIdCounter;
+  const el=document.createElement('div');
+  el.className=`obstacle ${def.cls}`;el.id=`obs-${id}`;
+  el.style.cssText=`left:${wx}px;top:${lt-10}px;`;
+  el.innerHTML=`<div class="obstacle-icon">${def.emoji}</div><div class="obs-label">${def.label}</div>`;
+  document.getElementById('obstaclesLayer').appendChild(el);
+  obstacles.push({id,type,worldX:wx,laneIdx:li,el,triggered:false});
+}
+function startSpawnScheduler(){spawnScheduler=setInterval(()=>{if(!state.racing)return;const c=Math.random()<.4?2:1;for(let i=0;i<c;i++)spawnObstacle();},900+Math.random()*700);}
+function stopSpawnScheduler(){clearInterval(spawnScheduler);spawnScheduler=null;}
+function checkObstacleCollisions(){
+  const now=Date.now();
+  surferStatus.forEach((st,i)=>{
+    if(st.frozen&&now>st.frozenUntil){st.frozen=false;st.speedMult=1;removeStatusBadge(i,'frozen');}
+    if(st.speedMult>1&&now>st.boostUntil){st.speedMult=1;removeStatusBadge(i,'boost');}
+  });
+  obstacles.forEach(obs=>{
+    if(obs.triggered)return;
+    if(Math.abs(surferPx[obs.laneIdx]-obs.worldX)>COLL_RADIUS)return;
+    obs.triggered=true;
+    const def=OBSTACLE_TYPES[obs.type],st=surferStatus[obs.laneIdx],se=document.getElementById('surfer'+obs.laneIdx);
+    if(obs.type==='shark'){
+      if(obs.laneIdx===0&&st.shielded){st.shielded=false;if(se)se.classList.remove('shielded');spawnToast(obs.laneIdx,'🛡️ Щит защитил!','toast-info');removeStatusBadge(0,'shield');}
+      else{st.speedMult=def.power;st.frozenUntil=now+def.duration;if(se){se.classList.add('hit-shark');setTimeout(()=>se.classList.remove('hit-shark'),700);}spawnToast(obs.laneIdx,def.msg,def.msgCls);addStatusBadge(obs.laneIdx,'shark','🦈 Замедлен','rgba(239,68,68,.85)',def.duration);setTimeout(()=>{if(st.speedMult<1){st.speedMult=1;removeStatusBadge(obs.laneIdx,'shark');}},def.duration);}
+    }else if(obs.type==='octopus'){
+      if(obs.laneIdx===0&&st.shielded){st.shielded=false;if(se)se.classList.remove('shielded');spawnToast(obs.laneIdx,'🛡️ Щит защитил!','toast-info');removeStatusBadge(0,'shield');}
+      else{st.frozen=true;st.frozenUntil=now+def.duration;if(se){se.classList.add('frozen','hit-octopus');setTimeout(()=>se.classList.remove('hit-octopus'),900);setTimeout(()=>{se.classList.remove('frozen');st.frozen=false;removeStatusBadge(obs.laneIdx,'octopus');},def.duration);}spawnToast(obs.laneIdx,def.msg,def.msgCls);addStatusBadge(obs.laneIdx,'octopus','🐙 Заморожен','rgba(124,58,237,.85)',def.duration);}
+    }else if(obs.type==='boat'){
+      st.speedMult=def.power;st.boostUntil=now+def.duration;if(se){se.classList.add('hit-boat');setTimeout(()=>se.classList.remove('hit-boat'),600);}spawnToast(obs.laneIdx,def.msg,def.msgCls);addStatusBadge(obs.laneIdx,'boat','🚤 Буст','rgba(16,185,129,.85)',def.duration);setTimeout(()=>{if(st.speedMult>=def.power){st.speedMult=1;removeStatusBadge(obs.laneIdx,'boat');}},def.duration);
+    }else if(obs.type==='ring'){
+      if(obs.laneIdx===0){st.shielded=true;if(se)se.classList.add('shielded');spawnToast(obs.laneIdx,def.msg,def.msgCls);addStatusBadge(0,'shield','🛟 Щит','rgba(59,130,246,.85)',def.duration);setTimeout(()=>{st.shielded=false;if(se)se.classList.remove('shielded');removeStatusBadge(0,'shield');},def.duration);}
+      else{st.speedMult=1.3;st.boostUntil=now+1500;setTimeout(()=>{if(st.speedMult<=1.3)st.speedMult=1;},1500);spawnToast(obs.laneIdx,'🛟 +Скорость!','toast-good');}
+    }
+    obs.el.style.transition='opacity .4s,transform .4s';obs.el.style.opacity='0';obs.el.style.transform='scale(1.8)';setTimeout(()=>obs.el.remove(),500);
+  });
+  obstacles=obstacles.filter(o=>!o.triggered);
+}
+function spawnToast(li,msg,cls){
+  const lt=[92,126,160,194][li],se=document.getElementById('surfer'+li);
+  const x=se?parseFloat(se.style.left):surferPx[li];
+  const t=document.createElement('div');t.className=`event-toast ${cls}`;t.textContent=msg;
+  t.style.cssText=`left:${x}px;top:${lt-28}px;`;
+  document.getElementById('obstaclesLayer').appendChild(t);setTimeout(()=>t.remove(),1500);
+  if(li===0)showNotif(msg);
+}
+function addStatusBadge(li,key,label,bg,dur){
+  const bk=`${li}-${key}`;removeStatusBadge(li,key);
+  const el=document.createElement('div');el.className='obs-status-item';el.id=`badge-${bk}`;
+  el.style.background=bg;el.style.color='white';
+  let rem=Math.round(dur/1000);el.textContent=`${label} (${rem}с)`;
+  const iv=setInterval(()=>{rem--;if(rem<=0){clearInterval(iv);el.remove();return;}el.textContent=`${label} (${rem}с)`;},1000);
+  statusBadges[bk]={el,iv};document.getElementById('obsStatus').appendChild(el);
+}
+function removeStatusBadge(li,key){
+  const bk=`${li}-${key}`;
+  if(statusBadges[bk]){clearInterval(statusBadges[bk].iv);statusBadges[bk].el.remove();delete statusBadges[bk];}
+}
+
+// ══ RACE ══
+function startRace(){
+  if(state.racing)return;
+  state.racing=true;surferPx=[RACE_START,RACE_START,RACE_START,RACE_START];
+  resetObstacles();renderSurfers();
+  const btn=document.getElementById('raceBtn');btn.textContent='🌊 Гонка идёт...';btn.classList.add('racing');
+  setTimeout(spawnObstacle,600);setTimeout(spawnObstacle,1200);startSpawnScheduler();
+  state.raceInterval=setInterval(()=>{
+    let finished=-1;checkObstacleCollisions();
+    SURFERS.forEach((s,i)=>{
+      const st=surferStatus[i];if(st.frozen)return;
+      let spd=s.speed*(8+Math.random()*6)*st.speedMult;
+      if(i===0){if(state.activeBoosts.turbo)spd*=BOOSTS[0].speedMult;if(state.activeBoosts.wind)spd*=BOOSTS[1].speedMult;if(state.activeBoosts.ramp)spd*=BOOSTS[2].speedMult;if(state.activeBoosts.shield)spd*=BOOSTS[3].speedMult;}
+      surferPx[i]=Math.min(surferPx[i]+spd,RACE_FINISH);
+      const el=document.getElementById('surfer'+i);
+      if(el){el.style.left=surferPx[i]+'px';if(i===0){const b=Object.keys(state.activeBoosts).length>0||st.speedMult>1;if(b)el.classList.add('boosted');else el.classList.remove('boosted');const w=el.querySelector('.surfer-wake');if(w)w.textContent=st.speedMult>1?'⚡⚡〰️':b?'⚡〰️💦':'〰️💦';}}
+      if(surferPx[i]>=RACE_FINISH&&finished===-1)finished=i;
+    });
+    const vw=VIEWPORT_W(),px=surferPx[0];let cx=px-vw*.35;cx=Math.max(0,Math.min(cx,WORLD_WIDTH-vw));
+    document.getElementById('raceWorld').style.transform=`translateX(-${cx}px)`;
+    const pct=((surferPx[0]-RACE_START)/(RACE_FINISH-RACE_START)*100).toFixed(0);
+    document.getElementById('raceProgressFill').style.width=Math.min(pct,100)+'%';
+    const sorted=surferPx.map((p,i)=>({i,p})).sort((a,b)=>b.p-a.p);
+    const place=sorted.findIndex(x=>x.i===0)+1;
+    const pe=['🥇','🥈','🥉','4️⃣'][place-1];
+    const dist=Math.round((surferPx[0]-RACE_START)/(RACE_FINISH-RACE_START)*100);
+    document.getElementById('raceDistLabel').textContent=`${pe} ${dist}м / 100м${surferStatus[0].frozen?' 🐙':''}`;
+    if(finished!==-1){clearInterval(state.raceInterval);stopSpawnScheduler();state.racing=false;btn.textContent='🏄 Начать гонку';btn.classList.remove('racing');endRace(finished);}
+  },80);
+}
+function endRace(winner){
+  stopSpawnScheduler();
+  const sorted=surferPx.map((p,i)=>({i,p})).sort((a,b)=>b.p-a.p);
+  const place=sorted.findIndex(x=>x.i===0)+1;
+  const r=getRewards(place);state.coins+=r.coins;state.xp+=r.xp;state.trophies+=r.trophies;
+  state.clubWarScore.us+=Math.floor(r.coins*.1);updateHUD();showResult(place,r);
+  setTimeout(()=>{surferPx=[RACE_START,RACE_START,RACE_START,RACE_START];resetObstacles();
+    document.getElementById('raceWorld').style.transform='translateX(0)';
+    document.getElementById('raceProgressFill').style.width='0%';
+    document.getElementById('raceDistLabel').textContent='';renderSurfers();},300);
+}
+function getRewards(p){return({1:{coins:500,xp:300,trophies:30},2:{coins:300,xp:180,trophies:15},3:{coins:150,xp:100,trophies:5},4:{coins:50,xp:50,trophies:0}})[p]||{coins:50,xp:50,trophies:0};}
+function showResult(place,r){
+  const em=['🥇','🥈','🥉','💨'],lb=['1-е место!','2-е место!','3-е место!','4-е место'],pc=['p1','p2','p3','p4'];
+  document.getElementById('resultPlace').textContent=em[place-1];
+  document.getElementById('resultPlace').className='result-place '+pc[place-1];
+  document.getElementById('resultLabel').textContent=lb[place-1];
+  document.getElementById('resultTime').textContent=`Время: 1:${(20+Math.random()*10).toFixed(1)}`;
+  document.getElementById('resultRewards').innerHTML=`<div class="reward-item"><div class="reward-icon">🪙</div><div class="reward-val">+${r.coins}</div></div><div class="reward-item"><div class="reward-icon">⭐</div><div class="reward-val">+${r.xp} XP</div></div><div class="reward-item"><div class="reward-icon">🏆</div><div class="reward-val">${r.trophies>0?'+':''}${r.trophies}</div></div>`;
+  document.getElementById('resultOverlay').classList.add('open');
+}
+function closeResult(){document.getElementById('resultOverlay').classList.remove('open');}
+
+// ══ BOOSTS ══
+function renderBoosts(){
+  document.getElementById('boostGrid').innerHTML=BOOSTS.map(b=>`
+    <button class="boost-btn ${state.activeBoosts[b.id]?'active':''} ${state.boostCooldowns[b.id]?'on-cooldown':''}" id="boost-${b.id}" onclick="activateBoost('${b.id}')">
+      <span class="boost-icon">${b.icon}</span><span>${b.name}</span>
+      <span style="color:var(--gold);font-size:11px;display:block">${b.desc} · 🪙${b.cost}</span>
+      <div class="cooldown-bar"><div class="cooldown-fill" id="cd-${b.id}" style="width:0%"></div></div>
+    </button>`).join('');
+}
+function activateBoost(id){
+  if(state.boostCooldowns[id])return;
+  const b=BOOSTS.find(x=>x.id===id);
+  if(state.coins<b.cost){showNotif('❌ Недостаточно монет!');return;}
+  state.coins-=b.cost;state.activeBoosts[id]=true;updateHUD();renderBoosts();showNotif(`${b.icon} ${b.name} активирован!`);spawnBoostParticles();
+  setTimeout(()=>{delete state.activeBoosts[id];state.boostCooldowns[id]=true;renderBoosts();startCooldown(id,b.cooldown);},b.duration*1000);
+}
+function startCooldown(id,sec){
+  let rem=sec;
+  const iv=setInterval(()=>{rem--;const el=document.getElementById('cd-'+id);if(el)el.style.width=((sec-rem)/sec*100)+'%';if(rem<=0){clearInterval(iv);delete state.boostCooldowns[id];renderBoosts();}},1000);
+}
+function spawnBoostParticles(){
+  const c=document.getElementById('raceViewport');
+  ['⚡','💫','✨','🌊','⭐'].forEach((e,i)=>{
+    const p=document.createElement('div');p.className='boost-particle';p.textContent=e;
+    p.style.left=(20+Math.random()*60)+'%';p.style.top=(40+Math.random()*40)+'%';p.style.animationDelay=(i*.1)+'s';
+    c.appendChild(p);setTimeout(()=>p.remove(),1000);
+  });
+}
+
+// ══ EQUIPMENT ══
+function renderEquipment(){
+  const catL={board:'🏄 Доска',suit:'👕 Костюм',helmet:'⛑️ Шлем'};
+  document.getElementById('equipGrid').innerHTML=Object.entries(EQUIP).map(([cat,items])=>`
+    <div>
+      <div style="font-family:'Fredoka One',cursive;font-size:15px;color:var(--sand);margin-bottom:10px">${catL[cat]}</div>
+      <div class="equip-grid">${items.map(item=>{
+        const sel=state.selectedEquip[cat]===item.id;
+        const btn=!item.owned?`🛒 ${item.gemCost}💎`:sel?'✓ Надето':'Надеть';
+        const bs=!item.owned?'background:linear-gradient(135deg,#7c3aed,#6d28d9);color:white':sel?'background:linear-gradient(135deg,#16a34a,#15803d);color:white':'background:rgba(255,255,255,.15);color:white';
+        return`<div class="equip-item${sel?' selected':''}${!item.owned?' not-owned':''}" onclick="selectEquip('${cat}','${item.id}')">
+          <div class="equip-icon">${item.icon}</div>
+          <div class="equip-info"><div class="equip-name">${item.name}</div><div class="equip-stat">${item.stat}</div></div>
+          <div class="equip-badge" style="${bs}">${btn}</div></div>`;
+      }).join('')}</div></div>`).join('');
+}
+function selectEquip(cat,id){
+  const item=EQUIP[cat].find(i=>i.id===id);if(!item)return;
+  if(!item.owned){
+    if(!item.gemCost){showNotif('🔒 Недоступно!');return;}
+    if(state.gems<item.gemCost){showNotif(`❌ Нужно ${item.gemCost} 💎`);return;}
+    state.gems-=item.gemCost;item.owned=true;updateHUD();showNotif(`🎉 Куплено: ${item.icon} ${item.name}!`);
+  }
+  state.selectedEquip[cat]=id;renderEquipment();updatePlayerSprite();
+  showNotif(`✅ ${item.icon} ${item.name} надет`);
+}
+
+// ══ LEADERBOARD ══
+function renderLeaderboard(){
+  document.getElementById('lbList').innerHTML=LEADERBOARD.slice(0,5).map((p,i)=>lbItem(p,i)).join('');
+  document.getElementById('fullLbList').innerHTML=LEADERBOARD.map((p,i)=>lbItem(p,i)).join('');
+}
+function lbItem(p,i){
+  const r=['🥇','🥈','🥉'],rc=i===0?'gold':i===1?'silver':i===2?'bronze':'';
+  return`<div class="lb-item${p.you?' you':''}"><div class="lb-rank ${rc}">${r[i]||i+1}</div><div class="lb-avatar">${p.emoji}</div><div class="lb-name">${p.name}${p.you?' (ты)':''}</div><div class="lb-score">🏆 ${p.score.toLocaleString()}</div></div>`;
+}
+
+// ══ CLUB ══
+function renderClubMembers(){
+  const m=['🐱','🦊','🐶','🐻','🦁','🐯','🐨','🦝','🐸','🦉'];
+  const l=document.getElementById('clubMembersList');
+  if(l)l.innerHTML=m.map(x=>`<span style="font-size:22px">${x}</span>`).join('');
+}
+
+// ══ TABS ══
+function showTab(tab,btn){
+  ['boosts','equip','leaderboard','club'].forEach(t=>{const e=document.getElementById('tab-'+t);if(e)e.style.display='none';});
+  const lb=document.getElementById('tab-boosts-lb'),cl=document.getElementById('tab-boosts-club');
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  if(tab==='boosts'){document.getElementById('tab-boosts').style.display='block';if(lb)lb.style.display='block';if(cl)cl.style.display='block';}
+  else if(tab==='equip'){document.getElementById('tab-equip').style.display='block';if(lb)lb.style.display='none';if(cl)cl.style.display='none';}
+  else if(tab==='leaderboard'){document.getElementById('tab-leaderboard').style.display='block';if(lb)lb.style.display='none';if(cl)cl.style.display='none';}
+  else if(tab==='club'){document.getElementById('tab-club').style.display='block';if(lb)lb.style.display='none';if(cl)cl.style.display='none';}
+}
+
+// ══ TRAINING ══
+function trainSkill(){if(state.coins<50){showNotif('❌ Нужно 50 монет');return;}state.coins-=50;state.xp+=150;updateHUD();showNotif('💪 +150 XP!');}
+
+// ══ IDLE ══
+function startIdleEarning(){
+  state.idleInterval=setInterval(()=>{
+    state.coins+=state.idleRate;state.clubWarScore.us+=1;updateHUD();
+    document.querySelectorAll('#ourScore,#ourScore2').forEach(e=>e.textContent=state.clubWarScore.us.toLocaleString());
+    const p=state.clubWarScore.us/(state.clubWarScore.us+state.clubWarScore.them)*100;
+    document.querySelectorAll('.war-bar-fill').forEach(e=>e.style.width=p+'%');
+  },1000);
+}
+function startWarTimer(){
+  state.warInterval=setInterval(()=>{
+    if(state.clubWarTimer<=0){clearInterval(state.warInterval);document.querySelectorAll('#warTimer,#warTimer2').forEach(e=>e.textContent='Война завершена!');return;}
+    state.clubWarTimer--;
+    const h=Math.floor(state.clubWarTimer/3600),m=Math.floor((state.clubWarTimer%3600)/60),s=state.clubWarTimer%60;
+    const str=`До конца: ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    document.querySelectorAll('#warTimer,#warTimer2').forEach(e=>e.textContent=str);
+  },1000);
+}
+
+// ══ HUD ══
+function updateHUD(){
+  document.getElementById('coins').textContent=state.coins.toLocaleString();
+  document.getElementById('gems').textContent=state.gems.toLocaleString();
+  document.getElementById('trophies').textContent=state.trophies.toLocaleString();
+  const p=state.xp/state.xpMax*100;
+  document.getElementById('xpFill').style.width=Math.min(p,100)+'%';
+  document.getElementById('xpNum').textContent=`${state.xp.toLocaleString()} / ${state.xpMax.toLocaleString()} XP`;
+  if(state.xp>=state.xpMax){state.level++;state.xp-=state.xpMax;state.xpMax=Math.floor(state.xpMax*1.3);showNotif(`🎉 Уровень ${state.level}!`);}
+}
+
+// ══ GEM SHOP ══
+function buyGems(amount,fmCost,el){
+  el.style.transform='scale(.96)';setTimeout(()=>el.style.transform='',150);
+  state.gems+=amount;updateHUD();
+  const pill=document.querySelector('.gem-pill');
+  if(pill){pill.classList.add('burst');setTimeout(()=>pill.classList.remove('burst'),700);}
+  spawnGemParticles(amount);
+  setTimeout(()=>closeModal('gemShopModal'),320);
+  showNotif(`💎 +${amount} кристаллов! (${fmCost} ФМ)`);
+}
+function spawnGemParticles(amount){
+  const pill=document.querySelector('.gem-pill');if(!pill)return;
+  const rect=pill.getBoundingClientRect(),count=Math.min(Math.ceil(amount/10),8);
+  for(let i=0;i<count;i++){
+    const p=document.createElement('div');p.textContent='💎';
+    p.style.cssText=`position:fixed;z-index:9999;pointer-events:none;font-size:${14+Math.random()*10}px;left:${rect.left+rect.width/2}px;top:${rect.top+rect.height/2}px;animation:gemParticleFly .9s ease-out forwards;animation-delay:${i*.07}s;--tx:${(Math.random()-.5)*160}px;--ty:${-(40+Math.random()*80)}px;`;
+    document.body.appendChild(p);setTimeout(()=>p.remove(),1000+i*80);
+  }
+}
+
+// ══ MODALS / CLUBS ══
+function openGemShop(){document.getElementById('gemShopModal').classList.add('open');}
+function openClubs(){document.getElementById('clubsModal').classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function joinClub(el,name){
+  document.querySelectorAll('.club-option').forEach(x=>x.classList.remove('joined'));
+  el.classList.add('joined');showNotif(`🤝 Вступил в клуб "${name}"!`);
+  setTimeout(()=>closeModal('clubsModal'),800);
+}
+document.querySelectorAll('.modal-overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)closeModal(el.id);});});
+
+// ══ NOTIFICATIONS ══
+let notifTimer=null;
+function showNotif(text){
+  let n=document.querySelector('.notif');if(n)n.remove();if(notifTimer)clearTimeout(notifTimer);
+  n=document.createElement('div');n.className='notif';n.textContent=text;document.body.appendChild(n);
+  notifTimer=setTimeout(()=>{n.style.opacity='0';n.style.transform='translateX(100px)';n.style.transition='all .3s';setTimeout(()=>n.remove(),300);},2500);
+}
+
+init();
+</script>
+</body>
+</html>
